@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新竹市自閉協打卡</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  body { font-family: sans-serif; text-align: center; padding: 24px; background: #f5f7f5; }
+  button { font-size: 22px; padding: 18px 0; width: 80%; margin: 10px; border: 0; border-radius: 12px; color: #fff; }
+  #in { background: #06c755; } #out { background: #555; }
+  #msg { font-size: 20px; margin-top: 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h2>新竹市自閉協打卡</h2>
+<div id="btns" style="display:none">
+  <div style="font-size:20px;margin:8px">備註1：
+    <select id="note1" style="font-size:20px;padding:6px">
+      <option value="">無</option><option>公出</option><option>外訪</option>
+    </select>
+  </div>
+  <div style="font-size:20px;margin:8px">備註2：
+    <select id="note2" style="font-size:20px;padding:6px">
+      <option value="">無</option><option>公假</option><option>補休</option><option>事假</option><option>病假</option><option>特休</option><option>婚假</option><option>喪假</option><option>產假</option><option>育嬰假</option><option>生理假</option><option>家庭照顧假</option><option>陪產檢及陪產假</option><option>產檢假</option><option>其他</option>
+    </select>
+  </div>
+  <button id="in">上班打卡</button>
+  <button id="out">下班打卡</button>
+</div>
+<div id="msg">載入中…</div>
+
+<script>
+const LIFF_ID = '2012803320-uRNL6bP6';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz81M0qM-GM1cZTLXFX_SEXWrmOje0xWAT8plh9rsf-V15k_pGF4_30B_3JugW172sO/exec';
+let loc = null;
+const msg = t => document.getElementById('msg').innerHTML = t;
+const btns = show => document.getElementById('btns').style.display = show ? 'block' : 'none';
+
+liff.init({ liffId: LIFF_ID }).then(() => {
+  // 第二關：不是在 LINE 裡打開就擋掉
+  if (!liff.isInClient()) { msg('請使用 LINE 掃描據點 QR Code 打卡'); return; }
+  loc = new URLSearchParams(location.search).get('loc');
+  if (!loc) { msg('請掃描據點的 QR Code'); return; }
+  btns(true); msg('');
+}).catch(e => msg('初始化失敗：' + e));
+
+document.getElementById('in').onclick  = () => punch('上班');
+document.getElementById('out').onclick = () => punch('下班');
+
+function punch(type) {
+  btns(false); msg('打卡中…');
+  const send = (lat, lng) => fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ idToken: liff.getIDToken(), loc, type, lat, lng,
+                            note1: document.getElementById('note1').value,
+                            note2: document.getElementById('note2').value })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) msg('✅ ' + d.name + '<br>' + d.type + '打卡成功' + (d.note ? '（' + d.note + '）' : '') + '<br>' + d.loc + '　' + d.time +
+                    (d.status === '待審核' ? '<br>（待管理員確認身分）' : ''));
+      else { msg('❌ ' + d.msg); btns(true); }
+    })
+    .catch(() => { msg('❌ 連線失敗，請稍後再試'); btns(true); });
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      p => send(p.coords.latitude, p.coords.longitude),
+      () => send('', ''), { timeout: 8000 });
+  } else send('', '');
+}
+</script>
+</body>
+</html>
