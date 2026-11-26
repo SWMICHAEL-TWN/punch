@@ -7,8 +7,8 @@
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   body { font-family: sans-serif; text-align: center; padding: 24px; background: #f5f7f5; }
-  button { font-size: 22px; padding: 18px 0; width: 80%; margin: 10px; border: 0; border-radius: 12px; color: #fff; }
-  #in { background: #06c755; } #out { background: #555; }
+  button { font-size: 22px; padding: 18px 0; width: 42%; margin: 8px 2%; border: 0; border-radius: 12px; color: #fff; }
+  #in { background: #06c755; } #out { background: #555; } #go { background: #e67e22; } #back { background: #2e86c1; }
   #msg { font-size: 20px; margin-top: 20px; line-height: 1.6; }
 </style>
 </head>
@@ -25,8 +25,8 @@
       <option value="">無</option><option>公假</option><option>補休</option><option>事假</option><option>病假</option><option>特休</option><option>婚假</option><option>喪假</option><option>產假</option><option>育嬰假</option><option>生理假</option><option>家庭照顧假</option><option>陪產檢及陪產假</option><option>產檢假</option><option>其他</option>
     </select>
   </div>
-  <button id="in">上班打卡</button>
-  <button id="out">下班打卡</button>
+  <button id="in">上班</button><button id="out">下班</button><br>
+  <button id="go">外出</button><button id="back">返回</button>
 </div>
 <div id="msg">載入中…</div>
 
@@ -47,6 +47,8 @@ liff.init({ liffId: LIFF_ID }).then(() => {
 
 document.getElementById('in').onclick  = () => punch('上班');
 document.getElementById('out').onclick = () => punch('下班');
+document.getElementById('go').onclick   = () => punch('外出');
+document.getElementById('back').onclick = () => punch('返回');
 
 function punch(type) {
   btns(false); msg('打卡中…');
